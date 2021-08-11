@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <h1>Tester！！！！！！！！！！！！！</h1>
+      <%require 'pg'%>
+      <%connection = PG::connect(dbname: "goya")%>
+      <% connection.internal_encoding = "UTF-8" %>
+      <h3>Les informations de Goya.</h3>
+
+    <% goyas_result = connection.exec("select * from crops WHERE give_for != 'Autoconsommation' and give_for !='Consommation à domicile' and give_for !='Consommation propre';") %>
+    <% goyas = [] %>
+    <% goyas_result.each do |goya| %>
+      <% goyas << " length: #{goya["length"]}, weight: #{goya["weight"]}, quality: #{goya["quality"]}, give_for: #{goya["give_for"]}, date: #{goya["date"]}" %>
+    <% end %>
+
+    <form action="indicate.cgi" method="POST">
+      <input type="text"  name="all-goya" value="<%= goyas.join('\n')%>"><br>
+      <input type="submit" name="Soumettre" >
+    </form>
+    <% result = connection.exec("select * from crops WHERE quality = 'f';") %>
+    <% data = [] %>
+    <% result.each do |record| %>
+      <%  data << "length: #{record["length"]}, weight: #{record["weight"]}, quality: #{record["quality"]}, give_for: #{record["give_for"]}, date: #{record["date"]}" %>
+    <% end %>
+
+    <h3>Les goyas de mauvaise qualités.</h3>
+    <form action="goya.cgi" method="POST">
+       Appuyez sur le boutton ci-dessous pour accéder à la page d'informations sur la taille de la courge amère et la personne qui l'a vendu.<br><br>
+      <input type="text" name="bad-goya" value="<%= data.join(' ') %>">
+      <input type="submit" name="Soumettre" >
+    </form>
+  </body>
+</html>
